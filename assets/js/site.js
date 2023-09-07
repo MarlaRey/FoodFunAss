@@ -32,7 +32,7 @@ myIdSearchButton.addEventListener("click", () => {
 
 //-------------------------------------------------------------------------------------
 
-// fetch functions --------------------------------------------------------------------
+// fetch functions Bo's eksempel--------------------------------------------------------------------
 
 
 function getRecipiesByName(myName) {
@@ -60,8 +60,49 @@ function getRecipiesByName(myName) {
       setupResultView(error);
     });
 }
+//----------------------------------------------------------
+// view code til Name search --------------------------------------------------------------------------
 
-//billedevisning
+function setupResultView(myData) {
+  switch (serchMode) {
+    case "firstLetterSearch":
+      console.log(myData);
+      let myText2 = "";
+
+      myData.map((myData) => {
+        myText2 += myData.strIngredient13 + ", ";
+      });
+      break;
+
+    case "nameSearch":
+      console.log(myData.meals);
+      let myText = "";
+
+      myData.meals.map((myMeal) => {
+        myText += myMeal.strMeal + ", ";
+      });
+
+      myResultElement.textContent = myText;
+      break;
+
+    case "idSearch":
+      console.log(myData);
+      // do view stuff with the data here
+      break;
+
+    case "errorMessage":
+      console.log(myData);
+      // do view stuff with the error msg here
+      break;
+
+    default:
+      console.warn("ooops no data to show from setupResultView");
+      break;
+  }
+}
+;
+//-------------------------------------
+//billedevisaning ved lettersearch
 document.addEventListener('DOMContentLoaded', () => {
   const firstLetterInput = document.getElementById('firstLetterInput');
   const firstLetterSearch = document.getElementById('firstLetterSearch');
@@ -108,6 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
               alert('An error occurred while fetching recipe data.');
           });
   }
+  // end of display recipe function
+//----------------------------------------------------------
+//first letter search function:
 
   firstLetterSearch.addEventListener('click', () => {
       const firstLetter = firstLetterInput.value;
@@ -166,90 +210,56 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// document.addEventListener('DOMContentLoaded', () => {
-//   const firstLetterInput = document.getElementById('firstLetterInput');
-//   const firstLetterSearch = document.getElementById('firstLetterSearch');
-//   const myResult = document.getElementById('myResult');
+//Meal id search function --------------------------------------------------------------------------
 
-//   firstLetterSearch.addEventListener('click', () => {
-//       const firstLetter = firstLetterInput.value;
+document.addEventListener('DOMContentLoaded', () => {
+  const idInput = document.getElementById('idInput');
+  const idSearch = document.getElementById('idSearch');
+  const myResult = document.getElementById('myResult');
 
-//       // Check if the input is not empty
-//       if (firstLetter.trim() === '') {
-//           alert('Please enter a letter.');
-//           return;
-//       }
+  // Function to display the meal details by Meal ID
+  function displayMealDetails(mealId) {
+      // Fetch the meal details from the API using the Meal ID
+      fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`)
+          .then((response) => response.json())
+          .then((data) => {
+              const meal = data.meals[0];
 
-//       // Clear previous results
-//       myResult.innerHTML = '';
+              // Create a list to display the meal details
+              const mealDetailsList = document.createElement('ul');
 
-//       // Fetch data from the API
-//       fetch(`https://www.themealdb.com/api/json/v1/1/search.php?f=${firstLetter}`)
-//           .then((response) => response.json())
-//           .then((data) => {
-//               if (data.meals === null) {
-//                   myResult.innerHTML = 'No meals found with that letter.';
-//               } else {
-//                   // Create a list of meals
-//                   const mealsList = document.createElement('ul');
+              // Loop through the properties of the meal and add them to the list
+              for (const property in meal) {
+                  if (meal[property] && property !== 'idMeal') {
+                      const listItem = document.createElement('li');
+                      listItem.textContent = `${property}: ${meal[property]}`;
+                      mealDetailsList.appendChild(listItem);
+                  }
+              }
 
-//                   data.meals.forEach((meal) => {
-//                       const listItem = document.createElement('li');
-//                       listItem.textContent = meal.strMeal;
-//                       mealsList.appendChild(listItem);
-//                   });
+              // Clear previous results
+              myResult.innerHTML = '';
 
-//                   myResult.appendChild(mealsList);
-//               }
-//           })
-//           .catch((error) => {
-//               console.error('Error fetching data:', error);
-//               myResult.innerHTML = 'An error occurred while fetching data.';
-//           });
-//   });
-// });
-
-
-
-
-
-
-// view code --------------------------------------------------------------------------
-
-function setupResultView(myData) {
-  switch (serchMode) {
-    case "firstLetterSearch":
-      console.log(myData);
-      let myText2 = "";
-
-      myData.map((myData) => {
-        myText2 += myData.strIngredient13 + ", ";
-      });
-      break;
-
-    case "nameSearch":
-      console.log(myData.meals);
-      let myText = "";
-
-      myData.meals.map((myMeal) => {
-        myText += myMeal.strMeal + ", ";
-      });
-
-      myResultElement.textContent = myText;
-      break;
-
-    case "idSearch":
-      console.log(myData);
-      // do view stuff with the data here
-      break;
-
-    case "errorMessage":
-      console.log(myData);
-      // do view stuff with the error msg here
-      break;
-
-    default:
-      console.warn("ooops no data to show from setupResultView");
-      break;
+              // Append the meal details list to the result
+              myResult.appendChild(mealDetailsList);
+          })
+          .catch((error) => {
+              console.error('Error fetching meal data:', error);
+              myResult.innerHTML = 'An error occurred while fetching meal data.';
+          });
   }
-}
+
+  // Add click event listener to the Meal ID search button
+  idSearch.addEventListener('click', () => {
+      const mealId = idInput.value;
+
+      // Check if the input contains exactly 5 digits
+      if (/^\d{5}$/.test(mealId)) {
+          displayMealDetails(mealId);
+      } else {
+          alert('Please enter a 5-digit Meal ID.');
+      }
+  });
+});
+
+
